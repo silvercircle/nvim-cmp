@@ -33,6 +33,27 @@ describe('matcher', function()
 
     assert.is.truthy(matcher.match('true', 'v:true', { synonyms = { 'true' } }) == matcher.match('true', 'true'))
     assert.is.truthy(matcher.match('g', 'get', { synonyms = { 'get' } }) > matcher.match('g', 'dein#get', { 'dein#get' }))
+
+    assert.is.truthy(matcher.match('Unit', 'net.UnixListener', { disallow_partial_fuzzy_matching = true }) == 0)
+    assert.is.truthy(matcher.match('Unit', 'net.UnixListener', { disallow_partial_fuzzy_matching = false }) >= 1)
+
+    local score, matches
+    score, matches = matcher.match('tail', 'HCDetails', {
+      disallow_fuzzy_matching = false,
+      disallow_partial_matching = false,
+      disallow_prefix_unmatching = false,
+      disallow_partial_fuzzy_matching = false,
+    })
+    assert.is.truthy(score >= 1)
+    assert.equals(matches[1].word_match_start, 5)
+
+    score = matcher.match('tail', 'HCDetails', {
+      disallow_fuzzy_matching = false,
+      disallow_partial_matching = false,
+      disallow_prefix_unmatching = false,
+      disallow_partial_fuzzy_matching = true,
+    })
+    assert.is.truthy(score == 0)
   end)
 
   it('disallow_fuzzy_matching', function()

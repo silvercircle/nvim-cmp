@@ -78,7 +78,7 @@ end
 ---Match entry
 ---@param input string
 ---@param word string
----@param option { synonyms: string[], disallow_fuzzy_matching: boolean, disallow_partial_matching: boolean, disallow_prefix_unmatching: boolean }
+---@param option { synonyms: string[], disallow_fuzzy_matching: boolean, disallow_partial_fuzzy_matching: boolean, disallow_partial_matching: boolean, disallow_prefix_unmatching: boolean }
 ---@return integer
 matcher.match = function(input, word, option)
   option = option or {}
@@ -128,6 +128,11 @@ matcher.match = function(input, word, option)
   end
 
   if #matches == 0 then
+    if not option.disallow_fuzzy_matching and not option.disallow_prefix_unmatching and not option.disallow_partial_fuzzy_matching then
+      if matcher.fuzzy(input, word, matches) then
+        return 1, matches
+      end
+    end
     return 0, {}
   end
 
@@ -179,8 +184,10 @@ matcher.match = function(input, word, option)
   -- Check remaining input as fuzzy
   if matches[#matches].input_match_end < #input then
     if not option.disallow_fuzzy_matching then
-      if prefix and matcher.fuzzy(input, word, matches) then
-        return score, matches
+      if not option.disallow_partial_fuzzy_matching or prefix then
+        if matcher.fuzzy(input, word, matches) then
+          return score, matches
+        end
       end
     end
     return 0, {}
@@ -191,10 +198,9 @@ end
 
 --- fuzzy
 matcher.fuzzy = function(input, word, matches)
-  local last_match = matches[#matches]
+  local input_index = matches[1] and (matches[1].input_match_end + 1) or 1
 
   -- Lately specified middle of text.
-  local input_index = last_match.input_match_end + 1
   for i = 1, #matches - 1 do
     local curr_match = matches[i]
     local next_match = matches[i + 1]
@@ -215,7 +221,7 @@ matcher.fuzzy = function(input, word, matches)
   local last_input_index = input_index
   local matched = false
   local word_offset = 0
-  local word_index = last_match.word_match_end + 1
+  local word_index = matches[1] and (matches[1].word_match_end + 1) or 1
   local input_match_start = -1
   local input_match_end = -1
   local word_match_start = -1
