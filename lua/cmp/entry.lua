@@ -60,7 +60,7 @@ entry.get_offset = function(self)
     if self:get_completion_item().textEdit then
       local range = self:get_insert_range()
       if range then
-        offset = self.context.cache:ensure('entry:' .. 'get_offset:'.. tostring(range.start.character), function()
+        offset = self.context.cache:ensure('entry:' .. 'get_offset:' .. tostring(range.start.character), function()
           for idx = range.start.character + 1, self.source_offset do
             if not char.is_white(string.byte(self.context.cursor_line, idx)) then
               return idx
@@ -268,7 +268,7 @@ entry.get_vim_item = function(self, suggest_offset)
 
     -- remove duplicated string.
     if self:get_offset() ~= self.context.cursor.col then
-      for i = 1, #word - 1 do
+      for i = 1, #word do
         if str.has_prefix(self.context.cursor_after_line, string.sub(word, i, #word)) then
           word = string.sub(word, 1, i - 1)
           break
@@ -361,14 +361,7 @@ end
 ---@param matching_config cmp.MatchingConfig
 ---@return { score: integer, matches: table[] }
 entry.match = function(self, input, matching_config)
-  return self.match_cache:ensure(
-    input .. ':' ..
-    (self.resolved_completion_item and '1' or '0' .. ':') ..
-    (matching_config.disallow_fuzzy_matching and '1' or '0') .. ':' ..
-    (matching_config.disallow_partial_fuzzy_matching and '1' or '0') .. ':' ..
-    (matching_config.disallow_partial_matching and '1' or '0') .. ':' ..
-    (matching_config.disallow_prefix_unmatching and '1' or '0')
-  , function()
+  return self.match_cache:ensure(input .. ':' .. (self.resolved_completion_item and '1' or '0' .. ':') .. (matching_config.disallow_fuzzy_matching and '1' or '0') .. ':' .. (matching_config.disallow_partial_fuzzy_matching and '1' or '0') .. ':' .. (matching_config.disallow_partial_matching and '1' or '0') .. ':' .. (matching_config.disallow_prefix_unmatching and '1' or '0'), function()
     local option = {
       disallow_fuzzy_matching = matching_config.disallow_fuzzy_matching,
       disallow_partial_fuzzy_matching = matching_config.disallow_partial_fuzzy_matching,
