@@ -92,9 +92,6 @@ source.get_entries = function(self, ctx)
 
   local prev = self.cache:get({ 'get_entries', tostring(self.revision) })
   if prev and ctx.cursor.row == prev.ctx.cursor.row and self.offset == prev.offset then
-    if ctx.cursor.col == prev.ctx.cursor.col then
-      return prev.entries
-    end
     -- only use prev entries when cursor is moved forward.
     -- and the pattern offset is the same.
     if prev.ctx.cursor.col <= ctx.cursor.col then
@@ -132,6 +129,14 @@ source.get_entries = function(self, ctx)
   end
 
   self.cache:set({ 'get_entries', tostring(self.revision) }, { entries = entries, ctx = ctx, offset = self.offset })
+
+  if self:get_source_config().max_item_count then
+    local limited_entries = {}
+    for i = 1, math.min(#entries, self:get_source_config().max_item_count) do
+      limited_entries[i] = entries[i]
+    end
+    entries = limited_entries
+  end
 
   return entries
 end
