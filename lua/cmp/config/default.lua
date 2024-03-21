@@ -29,7 +29,9 @@ return function()
     mapping = {},
 
     snippet = {
-      expand = function(_)
+      expand = vim.snippet and function(args)
+        vim.snippet.expand(args.body)
+      end or function(_)
         error('snippet engine is not configured.')
       end,
     },
@@ -57,6 +59,7 @@ return function()
       disallow_partial_fuzzy_matching = true,
       disallow_partial_matching = false,
       disallow_prefix_unmatching = false,
+      disallow_symbol_nonprefix_matching = true,
     },
 
     sorting = {
