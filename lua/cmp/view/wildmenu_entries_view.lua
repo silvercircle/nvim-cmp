@@ -179,6 +179,12 @@ wildmenu_entries_view.info = function(self)
   return self.entries_win:info()
 end
 
+wildmenu_entries_view.get_selected_index = function(self)
+  if self:visible() and self.active then
+    return self.selected_index
+  end
+end
+
 wildmenu_entries_view.select_next_item = function(self, option)
   if self:visible() then
     local cursor
@@ -223,8 +229,9 @@ wildmenu_entries_view.get_first_entry = function(self)
 end
 
 wildmenu_entries_view.get_selected_entry = function(self)
-  if self:visible() and self.active then
-    return self.entries[self.selected_index]
+  local idx = self:get_selected_index()
+  if idx then
+    return self.entries[idx]
   end
 end
 
